@@ -80,13 +80,34 @@ namespace OnlineStore.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CartProductVM>>> Orders(bool isProcessed = false)
+        public async Task<ActionResult<IEnumerable<OrderMobileOverviewDTO>>> Orders(bool isProcessed = false)
         {
             try
             {
-                var processedProducts = await db.Orders.Where(x => x.IsProcessed == isProcessed).ToListAsync();
+                var orders = await db.Orders
+                    .Include(x => x.Products).ThenInclude(x => x.Product)
+                    .Where(x => x.IsProcessed == isProcessed)
+                    .ToListAsync();
 
-                return Ok(processedProducts);
+
+                ICollection<OrderMobileOverviewDTO> dtos = new List<OrderMobileOverviewDTO>();
+                foreach (var order in orders)
+                {
+                    var dto = new OrderMobileOverviewDTO()
+                    {
+                        OrderDate = order.DateOfOrder,
+                        OrderId = order.Id,
+                        Products = order.Products.Select(x => new ProductQuantity()
+                        {
+                            Name = x.Product.Name,
+                            Quantity = x.Quantity
+                        })
+                    };
+
+                    dtos.Add(dto);
+                }
+
+                return Ok(dtos);
             }
             catch (Exception e)
             {

@@ -1,0 +1,22 @@
+
+<app-home-image></app-home-image>
+
+<div class="home-content" >
+
+  <app-category-card-list [categories$] = "mainCategories$"></app-category-card-list>
+
+  <div class="products-header"><span> Produse populare </span></div>
+  <br>  
+
+  <app-product-list  [products$]="mostPopularProducts$"></app-product-list>
+
+  <br><br><br>
+  <div class="products-header"><span> Produse noi </span></div>
+    <br>
+
+  <app-product-list [products$]="mostRecentProducts$"></app-product-list>
+
+
+</div>
+
+

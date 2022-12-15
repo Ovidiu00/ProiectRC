@@ -1,0 +1,42 @@
+
+.card-shadow{
+  box-shadow: 7px 7px 7px #888888;
+  cursor: pointer;
+
+  transition: transform .4s;
+  transform: scale(1.06);
+}
+.card-shadow-revert{
+  transition: transform .4s;
+  transform: scale(1);
+}
+
+
+.card{
+
+  width: 250px;
+  margin:auto;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+}
+
+mat-card img{
+  max-width: 282px;
+  max-height: 282px;
+}
+
+
+mat-card-content span.product-name{
+  text-align: center;
+  font-weight: bold;
+  color:black;
+  display: block;
+}
+
+mat-card-content span.product-price{
+  text-align: center;
+  font-weight: bolder;
+  color:red; ;
+  display:block
+
+}

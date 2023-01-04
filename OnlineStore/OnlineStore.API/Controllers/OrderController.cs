@@ -37,7 +37,7 @@ namespace OnlineStore.API.Controllers
             return Ok();
         }
 
-        [HttpPost]
+        [HttpPost("process")]
         public async Task<ActionResult> ProcessOrder(ProcessOrderVM model)
         {
             var order = db.Orders.FirstOrDefault(x => x.Id == model.OrderId);

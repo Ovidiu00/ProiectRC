@@ -11,6 +11,8 @@ namespace OnlineStore.DataAccess.Models.Entities
         public double Price { get; set; }
         public int Quantity { get; set; }
         public string FilePath { get; set; }
+        public int ExternalId { get; set; }
+        public int LastShipmentId { get; set; }
 
         public DateTime InsertedDate { get; set; }
 

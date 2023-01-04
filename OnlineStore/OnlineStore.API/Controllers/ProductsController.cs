@@ -6,8 +6,11 @@ using OnlineStore.API.ViewModels;
 using OnlineStore.Business.DTOs;
 using OnlineStore.Business.Mediator.Requests.Commands;
 using OnlineStore.Business.Mediator.Requests.Queries;
+using OnlineStore.DataAccess.Models.AppDbContext;
+using OnlineStore.DataAccess.Models.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OnlineStore.API.Controllers
@@ -18,11 +21,13 @@ namespace OnlineStore.API.Controllers
     {
         private readonly IMediator mediator;
         private readonly IMapper mapper;
+        private readonly OnlineStoreDbContext context;
 
-        public ProductsController(IMediator mediator, IMapper mapper)
+        public ProductsController(IMediator mediator, IMapper mapper, OnlineStoreDbContext context)
         {
             this.mediator = mediator;
             this.mapper = mapper;
+            this.context = context;
         }
 
         [AllowAnonymous]
@@ -100,7 +105,7 @@ namespace OnlineStore.API.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("{categoryId}")]
-        public async Task<ActionResult> AddProduct([FromForm]AddProductVM addProductVM, int categoryId)
+        public async Task<ActionResult> AddProduct([FromForm] AddProductVM addProductVM, int categoryId)
         {
             if (categoryId <= 0)
                 return BadRequest();
@@ -136,6 +141,43 @@ namespace OnlineStore.API.Controllers
             await mediator.Send(new DeleteProductCommand(id));
 
             return NoContent();
+        }
+
+        [HttpPost]
+        [Route("import-product")]
+        public async Task<ActionResult> ImportProduct(ImportProductVM model)
+        {
+            var existingProduct = context.Products.FirstOrDefault(x => x.ExternalId == model.ProductId);
+
+            if (existingProduct is null)
+            {
+                var entity = new Product()
+                {
+                    InsertedDate = DateTime.Now,
+                    Name = model.Name,
+                    Price = model.Price,
+                    Quantity = model.Quantity,
+                    FilePath = model.ProductPhotoURL,
+                    ExternalId = model.ProductId,
+                    LastShipmentId = model.ShipmentId
+                };
+
+                var category = await context.Categories.FindAsync(model.CategoryId);
+                category.Products.Add(entity);
+
+                context.Products.Add(entity);
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+
+            if (existingProduct.LastShipmentId == model.ShipmentId)
+            {
+                return BadRequest("Already scanned");
+            }
+
+            existingProduct.Quantity += model.Quantity;
+            await context.SaveChangesAsync();
+            return Ok();
         }
     }
 }
